@@ -94,6 +94,37 @@ fn main() {
     let a = Box::new([0; 1000000]);
     let b = a; // a loose the ownership of the box her that's why we print b
     println!("{:?} {}", b.as_ptr(), b[1000000 - 1]);
+    let m1 = String::from("Hello");
+    let m2 = String::from("world");
+    greet(&m1, &m2); // note the ampersands
+    println!("{} {}", m1, m2);
+
+    // if we dont pass the pointers then the ownership is lost, i.e
+    // greet(m1, m2)
+    // format!("{} {}", m1, m2) <- error borrowed variable
+    fn greet(g1: &String, g2: &String) {
+        // note the ampersands
+        println!("{} {}!", g1, g2);
+    }
+    // errors also depends on order of execution, i.e
+    //
+    // let mut v: Vec<i32> = vec![1, 2, 3];
+    // let num: &i32 = &v[2];
+    // v.push(4);
+    // println!("Third element is {}", *num);
+    //
+    // this is invalid, but this is valid:
+    let mut v: Vec<i32> = vec![1, 2, 3];
+    let num: &i32 = &v[2];
+    println!("Third element is {}", *num); // swapped here from being the last line
+    v.push(4);
+
+    // ### MUTABLE REFERENCES ###
+    let mut v: Vec<i32> = vec![1, 2, 3];
+    let num: &mut i32 = &mut v[2];
+    *num += 1;
+    println!("Third element is {}", *num);
+    println!("Vector is now {:?}", v);
 }
 
 // ### FUNCTIONS ###
