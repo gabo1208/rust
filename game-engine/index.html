@@ -1,0 +1,73 @@
+<html>
+    <body style="margin:0; overflow-y: hidden;overflow-x: hidden;">
+      <canvas id="my_canvas" style="width:100vw; height: 100vh;"></canvas>
+
+      <script>
+        let canvas = document.getElementById("my_canvas");
+        let vertex_shader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertex_shader, `
+            attribute vec2 vertex_position;
+            void main(void) {
+                gl_Position = vec4(vertex_position, 0.0, 1.0);
+            }
+        `);
+        gl.compileShader(vertex_shader);
+
+        let fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragment_shader, `
+            void main() {
+                gl_FragColor = vec4(1.0, 0.5, 0.313, 1.0);
+            }
+        `);
+        gl.compileShader(fragment_shader);
+
+        let program = gl.createProgram();
+        gl.attachShader(program, vertex_shader);
+        gl.attachShader(program, fragment_shader);
+        gl.linkProgram(program);
+
+        // We'll need to know this "location" later to let WebGL know where our rectangle corner data should go.
+        let position_attribute_location = gl.getAttribLocation(program, "vertex_position");
+        // For some reason these "locations" are disabled by default. It's unclear to me why that's useful.
+        gl.enableVertexAttribArray(position_attribute_location);
+        let gl = canvas.getContext("webgl");
+        let imports = {
+            env: {
+                js_clear_screen_to_color: function (red, green, blue, alpha) {
+                    gl.clearColor(red, green, blue, alpha);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                }
+            }
+        };
+
+        // communication with rust happens here!
+        WebAssembly.instantiateStreaming(fetch('./target/wasm32-unknown-unknown/debug/examples/game.wasm'), imports).then(
+          function (result) {
+            result.instance.exports.main();
+
+            document.onkeydown = function (event) {
+              let code = 0;
+              switch (event.code) {
+                  case "ArrowLeft":
+                      code = 1;
+                      break;
+                  case "ArrowRight":
+                      code = 2;
+                      break;
+                  case "ArrowUp":
+                      code = 3;
+                      break;
+                  case "ArrowDown":
+                      code = 4;
+                      break;
+                  case "Space":
+                      code = 5;
+                      break;
+              }
+
+              result.instance.exports.key_pressed(code);
+            };
+        })
+      </script>
+    </body>
+</html>
