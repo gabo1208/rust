@@ -4,6 +4,7 @@
 
       <script>
         let canvas = document.getElementById("my_canvas");
+        let gl = canvas.getContext("webgl");
         let vertex_shader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertex_shader, `
             attribute vec2 vertex_position;
@@ -30,7 +31,6 @@
         let position_attribute_location = gl.getAttribLocation(program, "vertex_position");
         // For some reason these "locations" are disabled by default. It's unclear to me why that's useful.
         gl.enableVertexAttribArray(position_attribute_location);
-        let gl = canvas.getContext("webgl");
         let imports = {
             env: {
                 js_clear_screen_to_color: function (red, green, blue, alpha) {
